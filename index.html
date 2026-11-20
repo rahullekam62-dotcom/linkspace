@@ -42,10 +42,8 @@
   <p><span id="typing"></span><span class="cursor">|</span></p>
   <div id="bio" style="display:none"></div>
 
-  <!-- ✅ FIX: Upar wale icons ka poora box hi pehle chhupa diya -->
-  <!-- Jab koi link aayega tabhi ye box + uska icon dikhega -->
+  <!-- ✅ PICS WAPAS - Upar wale gol icons wapas laga diye, jo link dalega uska icon dikhega -->
   <div id="topIconsBox" class="icons" style="display:none;">
-    <!-- ✅ FIX: Har icon bhi pehle chhupa diya -->
     <a id="topYt" href="#" target="_blank" style="display:none;"><i class="fa-brands fa-youtube"></i></a>
     <a id="topInsta" href="#" target="_blank" style="display:none;"><i class="fa-brands fa-instagram"></i></a>
     <a id="topTikTok" href="#" target="_blank" style="display:none;"><i class="fa-brands fa-tiktok"></i></a>
@@ -53,10 +51,7 @@
     <a id="topMail" href="#" target="_blank" style="display:none;"><i class="fa-solid fa-envelope"></i></a>
   </div>
 
-  <!-- ✅ FIX: Neeche wale buttons bhi bilkul khali, jo dalega wahi banega -->
   <div id="linksList"></div>
-
-  <!-- ✅ FIX: Products heading bhi chhupa diya -->
   <h3 id="prodHeading" style="margin:25px 0 10px; display:none;">My Products 🛍️</h3>
   <div id="productsList"></div>
 </div>
@@ -89,7 +84,6 @@
   }
   if (!username) username = "rr44";
   username = username.trim().toLowerCase();
-  console.log("Username:", username);
 
   let words = ["Surajpur | Creator", "YouTuber", "Instagram Star"];
   let wi = 0, li = 0;
@@ -100,7 +94,7 @@
   }
   type2();
 
-  // ✅ TOP ICON DIKHANE WALA FUNCTION - Jab link milega tabhi icon dikhega
+  // ✅ PICS WALA FUNCTION WAPAS
   function showTopIcon(id, url){
     document.getElementById("topIconsBox").style.display = "flex";
     const a = document.getElementById(id);
@@ -108,56 +102,44 @@
     a.href = url;
   }
 
-  // ✅ LINKS - Ek link se neeche button + upar icon dono banega
   function showOneLink(l){
     if (!l) return;
     if (l.isActive === false || l.active === false || l.visible === false) return;
-    // ✅ FIX: Dashboard kabhi url, kabhi link, kabhi value me save karta hai - sab check karo
-    // ✅ FIX: Agar url me https nahi hai to https laga do
     let url = l.url || l.link || l.href || l.value || l.destination || "#";
     if (url !== "#" && !url.startsWith("http") && !url.startsWith("mailto:") && !url.startsWith("tel:")) url = "https://" + url;
     const title = l.title || l.name || l.label || "Link";
     let titleLower = title.toLowerCase();
-    // ✅ FIX: "whats" ko bhi WhatsApp samjho - pehle ye miss ho raha tha
     let subtitle = l.subtitle || l.desc || l.description || "";
     let iconClass = "fa-solid fa-link"; let bgClass = "prod-bg";
-
     if (titleLower.includes("insta")) { iconClass = "fa-brands fa-instagram"; bgClass = "insta-bg"; if(!subtitle) subtitle = "Follow karo"; showTopIcon("topInsta", url); }
     else if (titleLower.includes("youtube") || titleLower.includes("yt") || titleLower.includes("you")) { iconClass = "fa-brands fa-youtube"; bgClass = "yt-bg"; if(!subtitle) subtitle = "Subscribe karo"; showTopIcon("topYt", url); }
     else if (titleLower.includes("whats") || titleLower.includes("whatsapp") || titleLower.includes("wa") || url.includes("wa.me")) { iconClass = "fa-brands fa-whatsapp"; bgClass = "wa-bg"; if(!subtitle) subtitle = "Chat karo"; showTopIcon("topWa", url); }
     else if (titleLower.includes("tiktok") || titleLower.includes("tik")) { iconClass = "fa-brands fa-tiktok"; bgClass = "prod-bg"; if(!subtitle) subtitle = "Follow karo"; showTopIcon("topTikTok", url); }
     else if (titleLower.includes("mail") || titleLower.includes("email") || titleLower.includes("gmail")) { iconClass = "fa-solid fa-envelope"; bgClass = "prod-bg"; if(!subtitle) subtitle = "Mail karo"; showTopIcon("topMail", url); }
     else { if(!subtitle) subtitle = "Open karo"; }
-
-    // ✅ Duplicate rokne ke liye
-    if (document.getElementById("linksList").innerHTML.includes(`href="${url}"`)) return;
+    if (document.getElementById("linksList").innerHTML.includes(`href="${url}"`) && url !== "#") return;
     document.getElementById("linksList").innerHTML += `<a class="btn" href="${url}" target="_blank">
       <span class="icon-box ${bgClass}"><i class="${iconClass}"></i></span><div>${title} <small>${subtitle}</small></div><span class="arrow">↗</span></a>`;
   }
 
-  // ✅ PRODUCTS - Ek product se neeche button banega
+  // ✅ SIRF YAHAN PRODUCT FIX KIYA HAI - Baaki kuch nahi chheda
   function showOneProduct(p){
-    if (!p) return;
-    if (p.isActive === false || p.active === false) return;
-    let url = p.url || p.link || p.href || p.buyLink || p.value || "#";
-    if (url !== "#" && !url.startsWith("http")) url = "https://" + url;
-    const title = p.title || p.name || p.productName || "Product";
-    const desc = p.desc || p.description || p.bio || "Buy Now";
-    const price = p.price || p.amount || "";
+    if (!p || typeof p !== "object") return;
+    if (p.isActive === false || p.active === false || p.visible === false) return;
+    console.log("Product mila:", p);
+    const title = p.title || p.name || p.productName || p.productTitle || p.itemName || p.label || "Product";
+    const desc = p.desc || p.description || p.productDesc || p.productDescription || p.bio || p.details || "Buy Now";
+    const price = p.price || p.productPrice || p.amount || p.cost || p.mrp || "";
+    let url = p.url || p.link || p.href || p.buyLink || p.productLink || p.productUrl || p.linkUrl || p.buyUrl || p.checkoutLink || p.checkoutUrl || p.value || p.destination || "#";
+    if (url !== "#" && !url.startsWith("http") && !url.startsWith("mailto:")) url = "https://" + url;
     document.getElementById("prodHeading").style.display = "block";
-    if (document.getElementById("productsList").innerHTML.includes(`href="${url}"`) && url !== "#") return;
+    if (document.getElementById("productsList").innerHTML.includes(`>${title} <small>`)) return;
     document.getElementById("productsList").innerHTML += `<a class="btn" href="${url}" target="_blank">
       <span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span>
       <div>${title} <small>${desc} ${price ? ' - ₹'+price : ''}</small></div><span class="arrow">↗</span></a>`;
   }
 
-  // ✅ SABSE BADA FIX: Dashboard 4 alag jagah save kar sakta hai - sab check karo
-  // 1. users/rr44 ke andar links[] array me
-  // 2. users/rr44 ke andar socials / socialLinks me
-  // 3. users/rr44/links subcollection me
-  // 4. RTDB users/rr44/links me
   function loadAll(){
-    // --- A. Firestore Profile Doc se ---
     db.collection("users").doc(username).get().then(doc => {
       if (!doc.exists) return;
       const data = doc.data();
@@ -166,45 +148,45 @@
       if (data.bio) { document.getElementById("bio").innerText = data.bio; words = [data.bio, "Surajpur | Creator", "YouTuber"]; }
       if (data.photoUrl || data.photo) document.getElementById("photo").src = data.photoUrl || data.photo;
       document.title = (data.name || username) + " | LinkSpace";
-
-      // ✅ FIX 1: Agar links profile ke andar array me hai to yahan se lo - YEHI TERA CASE HAI
+      // ✅ EMAIL WAISA HI RAHEGA
+      if (data.email) showOneLink({title:"Email", url:"mailto:" + data.email, subtitle:"Mail karo"});
       if (Array.isArray(data.links)) data.links.forEach(showOneLink);
       if (Array.isArray(data.socialLinks)) data.socialLinks.forEach(showOneLink);
       if (Array.isArray(data.socials)) data.socials.forEach(showOneLink);
+      // ✅ PRODUCT - Profile ke andar ho to
       if (Array.isArray(data.products)) data.products.forEach(showOneProduct);
       if (Array.isArray(data.shop)) data.shop.forEach(showOneProduct);
-
-      // ✅ FIX 2: Agar profile me seedha instagram/youtube/whatsapp field hai to usse bhi lo
-      if (data.instagram) showOneLink({title:"Instagram", url:data.instagram});
-      if (data.youtube) showOneLink({title:"YouTube", url:data.youtube});
-      if (data.whatsapp) showOneLink({title:"WhatsApp", url:data.whatsapp});
-      if (data.tiktok) showOneLink({title:"TikTok", url:data.tiktok});
-      if (data.email) showOneLink({title:"Email", url:"mailto:"+data.email});
+      if (Array.isArray(data.store)) data.store.forEach(showOneProduct);
+      if (Array.isArray(data.items)) data.items.forEach(showOneProduct);
+      if (Array.isArray(data.myProducts)) data.myProducts.forEach(showOneProduct);
+      if (data.product && typeof data.product === "object") showOneProduct(data.product);
+      if (data.products && !Array.isArray(data.products) && typeof data.products === "object") Object.values(data.products).forEach(showOneProduct);
     });
 
-    // --- B. Firestore Subcollection se ---
-    db.collection("users").doc(username).collection("links").get().then(snap => {
-      console.log("Firestore links subcollection:", snap.size);
-      snap.forEach(d => showOneLink(d.data()));
-    }).catch(e => console.log("Firestore links error", e));
-    db.collection("users").doc(username).collection("products").get().then(snap => {
-      console.log("Firestore products subcollection:", snap.size);
-      snap.forEach(d => showOneProduct(d.data()));
+    // ✅ PRODUCT - Subcollection se bhi
+    ["links","products","shop","store","items"].forEach(col => {
+      db.collection("users").doc(username).collection(col).get().then(snap => {
+        console.log("Firestore", col, snap.size);
+        snap.forEach(d => { if(col === "links") showOneLink(d.data()); else showOneProduct(d.data()); });
+      }).catch(()=>{});
     });
 
-    // --- C. RTDB se ---
     rtdb.ref("users/" + username).once("value").then(s => {
       const data = s.val(); console.log("RTDB Data:", data); if(!data) return;
+      if (data.email) showOneLink({title:"Email", url:"mailto:" + data.email, subtitle:"Mail karo"});
       if (Array.isArray(data.links)) data.links.forEach(showOneLink);
       else if (data.links && typeof data.links === "object") Object.values(data.links).forEach(showOneLink);
       if (Array.isArray(data.products)) data.products.forEach(showOneProduct);
       else if (data.products && typeof data.products === "object") Object.values(data.products).forEach(showOneProduct);
-      if (data.instagram) showOneLink({title:"Instagram", url:data.instagram});
-      if (data.youtube) showOneLink({title:"YouTube", url:data.youtube});
-      if (data.whatsapp) showOneLink({title:"WhatsApp", url:data.whatsapp});
+      if (Array.isArray(data.shop)) data.shop.forEach(showOneProduct);
+      else if (data.shop && typeof data.shop === "object") Object.values(data.shop).forEach(showOneProduct);
+      if (data.product && typeof data.product === "object") showOneProduct(data.product);
     });
-    rtdb.ref("users/" + username + "/links").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(showOneLink); });
-    rtdb.ref("users/" + username + "/products").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(showOneProduct); });
+    ["links","products","shop","store"].forEach(col => {
+      rtdb.ref("users/" + username + "/" + col).once("value").then(s => { const v = s.val(); if(!v) return; Object.values(v).forEach(item => { if(col === "links") showOneLink(item); else showOneProduct(item); }); });
+    });
+    db.collection("products").where("username", "==", username).get().then(snap => { snap.forEach(d => showOneProduct(d.data())); }).catch(()=>{});
+    db.collection("products").where("userId", "==", username).get().then(snap => { snap.forEach(d => showOneProduct(d.data())); }).catch(()=>{});
   }
   loadAll();
 
