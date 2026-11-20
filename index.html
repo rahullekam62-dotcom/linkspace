@@ -42,19 +42,21 @@
   <p><span id="typing"></span><span class="cursor">|</span></p>
   <div id="bio" style="display:none"></div>
 
-  <!-- ✅ TOP ICONS - Ye hamesha dikhenge, par click tabhi hoga jab link hoga -->
-  <div class="icons">
-    <a id="topYt" href="#" target="_blank"><i class="fa-brands fa-youtube"></i></a>
-    <a id="topInsta" href="#" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-    <a id="topTikTok" href="#" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
-    <a id="topMail" href="#" target="_blank"><i class="fa-solid fa-envelope"></i></a>
+  <!-- ✅ FIX: Upar wale icons ka poora box hi pehle chhupa diya -->
+  <!-- Jab koi link aayega tabhi ye box + uska icon dikhega -->
+  <div id="topIconsBox" class="icons" style="display:none;">
+    <!-- ✅ FIX: Har icon bhi pehle chhupa diya -->
+    <a id="topYt" href="#" target="_blank" style="display:none;"><i class="fa-brands fa-youtube"></i></a>
+    <a id="topInsta" href="#" target="_blank" style="display:none;"><i class="fa-brands fa-instagram"></i></a>
+    <a id="topTikTok" href="#" target="_blank" style="display:none;"><i class="fa-brands fa-tiktok"></i></a>
+    <a id="topWa" href="#" target="_blank" style="display:none;"><i class="fa-brands fa-whatsapp"></i></a>
+    <a id="topMail" href="#" target="_blank" style="display:none;"><i class="fa-solid fa-envelope"></i></a>
   </div>
 
-  <!-- ✅ FIX: Ab yahan pehle se koi button nahi hai, bilkul khali hai -->
-  <!-- Jo Dashboard se aayega, wahi yahan banega -->
+  <!-- ✅ FIX: Neeche wale buttons bhi bilkul khali, jo dalega wahi banega -->
   <div id="linksList"></div>
 
-  <!-- ✅ FIX: Products heading bhi pehle chhupa diya, jab product aayega tabhi dikhega -->
+  <!-- ✅ FIX: Products heading bhi chhupa diya -->
   <h3 id="prodHeading" style="margin:25px 0 10px; display:none;">My Products 🛍️</h3>
   <div id="productsList"></div>
 </div>
@@ -87,6 +89,7 @@
   }
   if (!username) username = "rr44";
   username = username.trim().toLowerCase();
+  console.log("Username:", username);
 
   let words = ["Surajpur | Creator", "YouTuber", "Instagram Star"];
   let wi = 0, li = 0;
@@ -97,77 +100,113 @@
   }
   type2();
 
-  // ✅ PROFILE
-  db.collection("users").doc(username).get().then(doc => {
-    if (!doc.exists) { document.getElementById("fullName").innerText = "User Not Found"; return; }
-    const data = doc.data();
-    if (data.name) document.getElementById("fullName").innerText = data.name;
-    if (data.bio) { document.getElementById("bio").innerText = data.bio; words = [data.bio, "Surajpur | Creator", "YouTuber"]; }
-    if (data.photoUrl) document.getElementById("photo").src = data.photoUrl;
-    document.title = (data.name || username) + " | LinkSpace";
-    // ✅ Profile me link hai to top icon me lagao, nahi to # hi rahega
-    if (data.instagram) document.getElementById("topInsta").href = data.instagram;
-    if (data.youtube) document.getElementById("topYt").href = data.youtube;
-    if (data.email) document.getElementById("topMail").href = "mailto:" + data.email;
-    if (data.tiktok) document.getElementById("topTikTok").href = data.tiktok;
-  });
+  // ✅ TOP ICON DIKHANE WALA FUNCTION - Jab link milega tabhi icon dikhega
+  function showTopIcon(id, url){
+    document.getElementById("topIconsBox").style.display = "flex";
+    const a = document.getElementById(id);
+    a.style.display = "flex";
+    a.href = url;
+  }
 
-  // ✅ FIX: LINKS - Ab sirf wahi button banega jo tune Dashboard me dala hai
-  // Pehle wale me 3 button pehle se likhe the, ab wo hata diye, ab JS banayega
+  // ✅ LINKS - Ek link se neeche button + upar icon dono banega
   function showOneLink(l){
-    if (l.isActive === false) return;
-    const url = l.url || l.link || l.href || l.value || "#";
-    const title = l.title || l.name || "Link";
+    if (!l) return;
+    if (l.isActive === false || l.active === false || l.visible === false) return;
+    // ✅ FIX: Dashboard kabhi url, kabhi link, kabhi value me save karta hai - sab check karo
+    // ✅ FIX: Agar url me https nahi hai to https laga do
+    let url = l.url || l.link || l.href || l.value || l.destination || "#";
+    if (url !== "#" && !url.startsWith("http") && !url.startsWith("mailto:") && !url.startsWith("tel:")) url = "https://" + url;
+    const title = l.title || l.name || l.label || "Link";
     let titleLower = title.toLowerCase();
-
-    // ✅ Subtitle - Screenshot jaisa: Insta=Follow karo, YT=Subscribe karo, WA=Chat karo
-    let subtitle = l.subtitle || l.desc || "";
+    // ✅ FIX: "whats" ko bhi WhatsApp samjho - pehle ye miss ho raha tha
+    let subtitle = l.subtitle || l.desc || l.description || "";
     let iconClass = "fa-solid fa-link"; let bgClass = "prod-bg";
-    if (titleLower.includes("insta")) { iconClass = "fa-brands fa-instagram"; bgClass = "insta-bg"; if(!subtitle) subtitle = "Follow karo"; document.getElementById("topInsta").href = url; }
-    else if (titleLower.includes("youtube") || titleLower.includes("yt") || titleLower.includes("you")) { iconClass = "fa-brands fa-youtube"; bgClass = "yt-bg"; if(!subtitle) subtitle = "Subscribe karo"; document.getElementById("topYt").href = url; }
-    else if (titleLower.includes("whats") || titleLower.includes("whatsapp")) { iconClass = "fa-brands fa-whatsapp"; bgClass = "wa-bg"; if(!subtitle) subtitle = "Chat karo"; }
-    else if (titleLower.includes("tiktok") || titleLower.includes("tik")) { iconClass = "fa-brands fa-tiktok"; bgClass = "prod-bg"; if(!subtitle) subtitle = "Follow karo"; document.getElementById("topTikTok").href = url; }
-    else if (titleLower.includes("mail") || titleLower.includes("email")) { iconClass = "fa-solid fa-envelope"; bgClass = "prod-bg"; if(!subtitle) subtitle = "Mail karo"; document.getElementById("topMail").href = url; }
+
+    if (titleLower.includes("insta")) { iconClass = "fa-brands fa-instagram"; bgClass = "insta-bg"; if(!subtitle) subtitle = "Follow karo"; showTopIcon("topInsta", url); }
+    else if (titleLower.includes("youtube") || titleLower.includes("yt") || titleLower.includes("you")) { iconClass = "fa-brands fa-youtube"; bgClass = "yt-bg"; if(!subtitle) subtitle = "Subscribe karo"; showTopIcon("topYt", url); }
+    else if (titleLower.includes("whats") || titleLower.includes("whatsapp") || titleLower.includes("wa") || url.includes("wa.me")) { iconClass = "fa-brands fa-whatsapp"; bgClass = "wa-bg"; if(!subtitle) subtitle = "Chat karo"; showTopIcon("topWa", url); }
+    else if (titleLower.includes("tiktok") || titleLower.includes("tik")) { iconClass = "fa-brands fa-tiktok"; bgClass = "prod-bg"; if(!subtitle) subtitle = "Follow karo"; showTopIcon("topTikTok", url); }
+    else if (titleLower.includes("mail") || titleLower.includes("email") || titleLower.includes("gmail")) { iconClass = "fa-solid fa-envelope"; bgClass = "prod-bg"; if(!subtitle) subtitle = "Mail karo"; showTopIcon("topMail", url); }
     else { if(!subtitle) subtitle = "Open karo"; }
 
-    // ✅ Duplicate na bane isliye check karo - same URL dobara nahi banega
+    // ✅ Duplicate rokne ke liye
     if (document.getElementById("linksList").innerHTML.includes(`href="${url}"`)) return;
-
     document.getElementById("linksList").innerHTML += `<a class="btn" href="${url}" target="_blank">
       <span class="icon-box ${bgClass}"><i class="${iconClass}"></i></span><div>${title} <small>${subtitle}</small></div><span class="arrow">↗</span></a>`;
   }
 
-  // ✅ LINKS: Firestore + RTDB dono se lo, jo milega wahi dikhega
-  db.collection("users").doc(username).collection("links").get().then(snap => {
-    snap.forEach(d => showOneLink(d.data()));
-    rtdb.ref("users/" + username + "/links").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(showOneLink); });
-  }).catch(() => {
-    rtdb.ref("users/" + username + "/links").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(showOneLink); });
-  });
-
-  // ✅ FIX: PRODUCTS - Ab sirf wahi product banega jo tune Dashboard me dala hai
-  // Pehle Product 1 / Product 2 pehle se likhe the, ab wo hata diye
+  // ✅ PRODUCTS - Ek product se neeche button banega
   function showOneProduct(p){
-    if (p.isActive === false) return;
+    if (!p) return;
+    if (p.isActive === false || p.active === false) return;
+    let url = p.url || p.link || p.href || p.buyLink || p.value || "#";
+    if (url !== "#" && !url.startsWith("http")) url = "https://" + url;
     const title = p.title || p.name || p.productName || "Product";
     const desc = p.desc || p.description || p.bio || "Buy Now";
     const price = p.price || p.amount || "";
-    const url = p.url || p.link || p.href || p.buyLink || "#";
-    // ✅ Jab pehla product aayega tabhi "My Products" heading dikhao
     document.getElementById("prodHeading").style.display = "block";
-    if (document.getElementById("productsList").innerHTML.includes(`href="${url}"`)) return;
+    if (document.getElementById("productsList").innerHTML.includes(`href="${url}"`) && url !== "#") return;
     document.getElementById("productsList").innerHTML += `<a class="btn" href="${url}" target="_blank">
       <span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span>
       <div>${title} <small>${desc} ${price ? ' - ₹'+price : ''}</small></div><span class="arrow">↗</span></a>`;
   }
 
-  // ✅ PRODUCTS: Firestore + RTDB dono se lo
-  db.collection("users").doc(username).collection("products").get().then(snap => {
-    snap.forEach(d => showOneProduct(d.data()));
+  // ✅ SABSE BADA FIX: Dashboard 4 alag jagah save kar sakta hai - sab check karo
+  // 1. users/rr44 ke andar links[] array me
+  // 2. users/rr44 ke andar socials / socialLinks me
+  // 3. users/rr44/links subcollection me
+  // 4. RTDB users/rr44/links me
+  function loadAll(){
+    // --- A. Firestore Profile Doc se ---
+    db.collection("users").doc(username).get().then(doc => {
+      if (!doc.exists) return;
+      const data = doc.data();
+      console.log("Profile Data:", data);
+      if (data.name) document.getElementById("fullName").innerText = data.name;
+      if (data.bio) { document.getElementById("bio").innerText = data.bio; words = [data.bio, "Surajpur | Creator", "YouTuber"]; }
+      if (data.photoUrl || data.photo) document.getElementById("photo").src = data.photoUrl || data.photo;
+      document.title = (data.name || username) + " | LinkSpace";
+
+      // ✅ FIX 1: Agar links profile ke andar array me hai to yahan se lo - YEHI TERA CASE HAI
+      if (Array.isArray(data.links)) data.links.forEach(showOneLink);
+      if (Array.isArray(data.socialLinks)) data.socialLinks.forEach(showOneLink);
+      if (Array.isArray(data.socials)) data.socials.forEach(showOneLink);
+      if (Array.isArray(data.products)) data.products.forEach(showOneProduct);
+      if (Array.isArray(data.shop)) data.shop.forEach(showOneProduct);
+
+      // ✅ FIX 2: Agar profile me seedha instagram/youtube/whatsapp field hai to usse bhi lo
+      if (data.instagram) showOneLink({title:"Instagram", url:data.instagram});
+      if (data.youtube) showOneLink({title:"YouTube", url:data.youtube});
+      if (data.whatsapp) showOneLink({title:"WhatsApp", url:data.whatsapp});
+      if (data.tiktok) showOneLink({title:"TikTok", url:data.tiktok});
+      if (data.email) showOneLink({title:"Email", url:"mailto:"+data.email});
+    });
+
+    // --- B. Firestore Subcollection se ---
+    db.collection("users").doc(username).collection("links").get().then(snap => {
+      console.log("Firestore links subcollection:", snap.size);
+      snap.forEach(d => showOneLink(d.data()));
+    }).catch(e => console.log("Firestore links error", e));
+    db.collection("users").doc(username).collection("products").get().then(snap => {
+      console.log("Firestore products subcollection:", snap.size);
+      snap.forEach(d => showOneProduct(d.data()));
+    });
+
+    // --- C. RTDB se ---
+    rtdb.ref("users/" + username).once("value").then(s => {
+      const data = s.val(); console.log("RTDB Data:", data); if(!data) return;
+      if (Array.isArray(data.links)) data.links.forEach(showOneLink);
+      else if (data.links && typeof data.links === "object") Object.values(data.links).forEach(showOneLink);
+      if (Array.isArray(data.products)) data.products.forEach(showOneProduct);
+      else if (data.products && typeof data.products === "object") Object.values(data.products).forEach(showOneProduct);
+      if (data.instagram) showOneLink({title:"Instagram", url:data.instagram});
+      if (data.youtube) showOneLink({title:"YouTube", url:data.youtube});
+      if (data.whatsapp) showOneLink({title:"WhatsApp", url:data.whatsapp});
+    });
+    rtdb.ref("users/" + username + "/links").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(showOneLink); });
     rtdb.ref("users/" + username + "/products").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(showOneProduct); });
-  }).catch(() => {
-    rtdb.ref("users/" + username + "/products").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(showOneProduct); });
-  });
+  }
+  loadAll();
 
   let canvas = document.getElementById("stars");
   let ctx = canvas.getContext("2d");
