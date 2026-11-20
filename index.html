@@ -60,28 +60,30 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // --- FIXED: USERNAME NIKALNA ---
+  // ✅ FIXED: USERNAME NIKALNA - /rr44 aur /?u=rr44 dono chalega
+  let username = "";
+  // Pehle ?u= check karo
   const params = new URLSearchParams(window.location.search);
-  let username = params.get("u") || params.get("username") || "";
+  username = params.get("u") || params.get("username") || "";
 
-  // Agar URL me username nahi hai, to pathname check karo
-  // Lekin index.html / blank ko username mat maano
+  // Agar ?u me nahi hai to pathname se lo - /rr44
   if (!username) {
-    const parts = window.location.pathname.split("/").filter(Boolean);
-    const last = parts[parts.length - 1] || "";
-    if (last && last !== "index.html" && !last.includes(".html") && last !== "index") {
-      username = last;
+    const path = window.location.pathname.replace(/^\/+|\/+$/g, ""); // aage-piche ke / hatao
+    const parts = path.split("/").filter(Boolean);
+    // index.html ko username mat maano
+    if (parts.length > 0 && parts[0] !== "index.html" && !parts[0].includes(".html")) {
+      username = parts[0];
     }
   }
 
-  // Abhi tera username rr44 hai, to default wahi rakha hai
+  // Agar abhi bhi khali hai (sirf linkspace.co.in khola hai) to rr44 dikhao
   if (!username) username = "rr44";
-  username = username.trim();
+  username = username.trim().toLowerCase();
 
+  console.log("Username mila:", username);
   document.getElementById("usernameDisplay").innerText = "@" + username;
 
-  // --- FIXED: Firestore se data - tere EditProfileBottomSheet wale naam se ---
-  // Collection: users, Document: rr44, Fields: name, bio, photoUrl
+  // --- Profile ---
   db.collection("users").doc(username).get().then(doc => {
     if (!doc.exists) {
       document.getElementById("fullName").innerText = "User Not Found";
@@ -90,11 +92,9 @@
     }
     const data = doc.data();
     console.log("Template Data:", data);
-
     if (data.name) document.getElementById("fullName").innerText = data.name;
     if (data.bio) document.getElementById("bio").innerText = data.bio;
     if (data.photoUrl) document.getElementById("photo").src = data.photoUrl;
-
     document.title = (data.name || username) + " | LinkSpace";
   }).catch(e => {
     console.log("Firestore Error:", e);
@@ -102,16 +102,19 @@
   });
 
   // Links - users/rr44/links se
-  db.collection("users").doc(username).collection("links").get().then(snap => {
+  db.collection("users").doc(username).collection("links").orderBy("createdAt", "asc").get().then(snap => {
     const box = document.getElementById("linksList");
     box.innerHTML = "";
     snap.forEach(d => {
       const l = d.data();
+      if (l.isActive === false) return;
       box.innerHTML += `<a class="link-btn" href="${l.url}" target="_blank">
         <img src="${l.icon || 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png'}">
         <span>${l.title || 'Link'}</span><span>→</span></a>`;
     });
     if (snap.empty) box.innerHTML = "<p style='color:#aaa;font-size:13px'>No links yet</p>";
+  }).catch(e => {
+    document.getElementById("linksList").innerHTML = "<p style='color:#aaa;font-size:13px'>Links load nahi hue</p>";
   });
 
   // Products - users/rr44/products se
