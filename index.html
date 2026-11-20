@@ -42,7 +42,7 @@
   <p><span id="typing"></span><span class="cursor">|</span></p>
   <div id="bio" style="display:none"></div>
 
-  <!-- ✅ TOP ICONS - Screenshot jaisa: YouTube, Instagram, TikTok, Mail -->
+  <!-- ✅ TOP ICONS - Ye hamesha dikhenge, par click tabhi hoga jab link hoga -->
   <div class="icons">
     <a id="topYt" href="#" target="_blank"><i class="fa-brands fa-youtube"></i></a>
     <a id="topInsta" href="#" target="_blank"><i class="fa-brands fa-instagram"></i></a>
@@ -50,26 +50,13 @@
     <a id="topMail" href="#" target="_blank"><i class="fa-solid fa-envelope"></i></a>
   </div>
 
-  <!-- ✅ FIX: Ye 3 button ab hamesha dikhenge, Screenshot jaisa -->
-  <!-- Agar Dashboard se link aayega to uska URL inhi me lag jayega -->
-  <div id="linksList">
-    <a id="btnInsta" class="btn" href="#" target="_blank">
-      <span class="icon-box insta-bg"><i class="fa-brands fa-instagram"></i></span><div>Instagram <small>Follow karo</small></div><span class="arrow">↗</span>
-    </a>
-    <a id="btnYt" class="btn" href="#" target="_blank">
-      <span class="icon-box yt-bg"><i class="fa-brands fa-youtube"></i></span><div>YouTube <small>Subscribe karo</small></div><span class="arrow">↗</span>
-    </a>
-    <a id="btnWa" class="btn" href="https://wa.me/919343262030" target="_blank">
-      <span class="icon-box wa-bg"><i class="fa-brands fa-whatsapp"></i></span><div>WhatsApp <small>Chat karo</small></div><span class="arrow">↗</span>
-    </a>
-  </div>
+  <!-- ✅ FIX: Ab yahan pehle se koi button nahi hai, bilkul khali hai -->
+  <!-- Jo Dashboard se aayega, wahi yahan banega -->
+  <div id="linksList"></div>
 
-  <h3 style="margin:25px 0 10px;">My Products 🛍️</h3>
-  <!-- ✅ FIX: Products bhi ab Screenshot jaisa hamesha dikhenge -->
-  <div id="productsList">
-    <a id="prod1" class="btn" href="#" target="_blank"><span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span><div>Product 1 <small>Buy Now</small></div><span class="arrow">↗</span></a>
-    <a id="prod2" class="btn" href="#" target="_blank"><span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span><div>Product 2 <small>Buy Now</small></div><span class="arrow">↗</span></a>
-  </div>
+  <!-- ✅ FIX: Products heading bhi pehle chhupa diya, jab product aayega tabhi dikhega -->
+  <h3 id="prodHeading" style="margin:25px 0 10px; display:none;">My Products 🛍️</h3>
+  <div id="productsList"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -110,7 +97,7 @@
   }
   type2();
 
-  // ✅ PROFILE - Firestore se
+  // ✅ PROFILE
   db.collection("users").doc(username).get().then(doc => {
     if (!doc.exists) { document.getElementById("fullName").innerText = "User Not Found"; return; }
     const data = doc.data();
@@ -118,72 +105,68 @@
     if (data.bio) { document.getElementById("bio").innerText = data.bio; words = [data.bio, "Surajpur | Creator", "YouTuber"]; }
     if (data.photoUrl) document.getElementById("photo").src = data.photoUrl;
     document.title = (data.name || username) + " | LinkSpace";
-    if (data.instagram) { document.getElementById("topInsta").href = data.instagram; document.getElementById("btnInsta").href = data.instagram; }
-    if (data.youtube) { document.getElementById("topYt").href = data.youtube; document.getElementById("btnYt").href = data.youtube; }
-    if (data.whatsapp) { document.getElementById("btnWa").href = data.whatsapp; }
+    // ✅ Profile me link hai to top icon me lagao, nahi to # hi rahega
+    if (data.instagram) document.getElementById("topInsta").href = data.instagram;
+    if (data.youtube) document.getElementById("topYt").href = data.youtube;
     if (data.email) document.getElementById("topMail").href = "mailto:" + data.email;
     if (data.tiktok) document.getElementById("topTikTok").href = data.tiktok;
   });
 
-  // ✅ LINKS FIX: Ab Dashboard ka link aayega to Screenshot wale button ka URL badal dega
-  // Nahi aayega to bhi button gayab nahi hoga, wahi dikhega
-  function handleLink(l){
+  // ✅ FIX: LINKS - Ab sirf wahi button banega jo tune Dashboard me dala hai
+  // Pehle wale me 3 button pehle se likhe the, ab wo hata diye, ab JS banayega
+  function showOneLink(l){
     if (l.isActive === false) return;
     const url = l.url || l.link || l.href || l.value || "#";
-    const title = (l.title || l.name || "").toLowerCase();
-    // ✅ Instagram wala link aaya to Instagram button + top icon dono me lagao
-    if (title.includes("insta")) { document.getElementById("btnInsta").href = url; document.getElementById("topInsta").href = url; }
-    // ✅ YouTube wala link aaya to YouTube button + top icon dono me lagao
-    else if (title.includes("youtube") || title.includes("yt") || title.includes("you")) { document.getElementById("btnYt").href = url; document.getElementById("topYt").href = url; }
-    // ✅ WhatsApp wala link aaya to WhatsApp button me lagao
-    else if (title.includes("whats") || title.includes("whatsapp")) { document.getElementById("btnWa").href = url; }
-    // ✅ TikTok wala link aaya to top TikTok icon me lagao
-    else if (title.includes("tiktok") || title.includes("tik")) { document.getElementById("topTikTok").href = url; }
-    // ✅ Mail wala link aaya to top Mail icon me lagao
-    else if (title.includes("mail") || title.includes("email")) { document.getElementById("topMail").href = url; }
-    // ✅ Agar koi naya link hai jaise Telegram, to uska alag button bana do
-    else {
-      const box = document.getElementById("linksList");
-      // Duplicate na bane isliye check karo
-      if (box.innerHTML.includes(url)) return;
-      box.innerHTML += `<a class="btn" href="${url}" target="_blank"><span class="icon-box prod-bg"><i class="fa-solid fa-link"></i></span><div>${l.title || "Link"} <small>Open karo</small></div><span class="arrow">↗</span></a>`;
-    }
+    const title = l.title || l.name || "Link";
+    let titleLower = title.toLowerCase();
+
+    // ✅ Subtitle - Screenshot jaisa: Insta=Follow karo, YT=Subscribe karo, WA=Chat karo
+    let subtitle = l.subtitle || l.desc || "";
+    let iconClass = "fa-solid fa-link"; let bgClass = "prod-bg";
+    if (titleLower.includes("insta")) { iconClass = "fa-brands fa-instagram"; bgClass = "insta-bg"; if(!subtitle) subtitle = "Follow karo"; document.getElementById("topInsta").href = url; }
+    else if (titleLower.includes("youtube") || titleLower.includes("yt") || titleLower.includes("you")) { iconClass = "fa-brands fa-youtube"; bgClass = "yt-bg"; if(!subtitle) subtitle = "Subscribe karo"; document.getElementById("topYt").href = url; }
+    else if (titleLower.includes("whats") || titleLower.includes("whatsapp")) { iconClass = "fa-brands fa-whatsapp"; bgClass = "wa-bg"; if(!subtitle) subtitle = "Chat karo"; }
+    else if (titleLower.includes("tiktok") || titleLower.includes("tik")) { iconClass = "fa-brands fa-tiktok"; bgClass = "prod-bg"; if(!subtitle) subtitle = "Follow karo"; document.getElementById("topTikTok").href = url; }
+    else if (titleLower.includes("mail") || titleLower.includes("email")) { iconClass = "fa-solid fa-envelope"; bgClass = "prod-bg"; if(!subtitle) subtitle = "Mail karo"; document.getElementById("topMail").href = url; }
+    else { if(!subtitle) subtitle = "Open karo"; }
+
+    // ✅ Duplicate na bane isliye check karo - same URL dobara nahi banega
+    if (document.getElementById("linksList").innerHTML.includes(`href="${url}"`)) return;
+
+    document.getElementById("linksList").innerHTML += `<a class="btn" href="${url}" target="_blank">
+      <span class="icon-box ${bgClass}"><i class="${iconClass}"></i></span><div>${title} <small>${subtitle}</small></div><span class="arrow">↗</span></a>`;
   }
 
-  // ✅ Firestore + RTDB dono se Links lo
+  // ✅ LINKS: Firestore + RTDB dono se lo, jo milega wahi dikhega
   db.collection("users").doc(username).collection("links").get().then(snap => {
-    snap.forEach(d => handleLink(d.data()));
-    rtdb.ref("users/" + username + "/links").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(handleLink); });
+    snap.forEach(d => showOneLink(d.data()));
+    rtdb.ref("users/" + username + "/links").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(showOneLink); });
   }).catch(() => {
-    rtdb.ref("users/" + username + "/links").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(handleLink); });
+    rtdb.ref("users/" + username + "/links").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(showOneLink); });
   });
 
-  // ✅ PRODUCTS FIX: Dashboard se product aayega to Product 1 / Product 2 ki jagah lega
-  // Nahi aayega to bhi Screenshot jaisa Product 1 / Product 2 dikhega
-  function handleProduct(p, index){
+  // ✅ FIX: PRODUCTS - Ab sirf wahi product banega jo tune Dashboard me dala hai
+  // Pehle Product 1 / Product 2 pehle se likhe the, ab wo hata diye
+  function showOneProduct(p){
     if (p.isActive === false) return;
-    const title = p.title || p.name || p.productName || ("Product " + (index+1));
+    const title = p.title || p.name || p.productName || "Product";
     const desc = p.desc || p.description || p.bio || "Buy Now";
     const price = p.price || p.amount || "";
     const url = p.url || p.link || p.href || p.buyLink || "#";
-    // Pehle 2 products ko replace karo, 3rd se naya button banao
-    if (index === 0) {
-      document.getElementById("prod1").href = url;
-      document.getElementById("prod1").querySelector("div").innerHTML = `${title} <small>${desc} ${price ? ' - ₹'+price : ''}</small>`;
-    } else if (index === 1) {
-      document.getElementById("prod2").href = url;
-      document.getElementById("prod2").querySelector("div").innerHTML = `${title} <small>${desc} ${price ? ' - ₹'+price : ''}</small>`;
-    } else {
-      document.getElementById("productsList").innerHTML += `<a class="btn" href="${url}" target="_blank"><span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span><div>${title} <small>${desc} ${price ? ' - ₹'+price : ''}</small></div><span class="arrow">↗</span></a>`;
-    }
+    // ✅ Jab pehla product aayega tabhi "My Products" heading dikhao
+    document.getElementById("prodHeading").style.display = "block";
+    if (document.getElementById("productsList").innerHTML.includes(`href="${url}"`)) return;
+    document.getElementById("productsList").innerHTML += `<a class="btn" href="${url}" target="_blank">
+      <span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span>
+      <div>${title} <small>${desc} ${price ? ' - ₹'+price : ''}</small></div><span class="arrow">↗</span></a>`;
   }
 
-  let prodIndex = 0;
+  // ✅ PRODUCTS: Firestore + RTDB dono se lo
   db.collection("users").doc(username).collection("products").get().then(snap => {
-    snap.forEach(d => { handleProduct(d.data(), prodIndex); prodIndex++; });
-    rtdb.ref("users/" + username + "/products").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(p => { handleProduct(p, prodIndex); prodIndex++; }); });
+    snap.forEach(d => showOneProduct(d.data()));
+    rtdb.ref("users/" + username + "/products").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(showOneProduct); });
   }).catch(() => {
-    rtdb.ref("users/" + username + "/products").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(p => { handleProduct(p, prodIndex); prodIndex++; }); });
+    rtdb.ref("users/" + username + "/products").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(showOneProduct); });
   });
 
   let canvas = document.getElementById("stars");
