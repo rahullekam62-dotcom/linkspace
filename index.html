@@ -38,29 +38,44 @@
   <br>
   <span class="online"><span class="dot">●</span> currently building • online</span>
   <h1 id="fullName">Loading...</h1>
-  <!-- ✅ FIX: Username chhupa diya, par div rakha hai taaki JS na atke -->
   <div id="usernameDisplay" style="display:none"></div>
   <p><span id="typing"></span><span class="cursor">|</span></p>
   <div id="bio" style="display:none"></div>
 
-  <!-- ✅ FIX: Upar ke icons ab Links se clickable honge -->
+  <!-- ✅ TOP ICONS - Screenshot jaisa: YouTube, Instagram, TikTok, Mail -->
   <div class="icons">
     <a id="topYt" href="#" target="_blank"><i class="fa-brands fa-youtube"></i></a>
     <a id="topInsta" href="#" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-    <!-- ✅ FIX: WhatsApp me tera number seedha daal diya, ye to pakka khulega -->
-    <a id="topWa" href="https://wa.me/919343262030" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+    <a id="topTikTok" href="#" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
     <a id="topMail" href="#" target="_blank"><i class="fa-solid fa-envelope"></i></a>
   </div>
 
-  <div id="linksList"></div>
+  <!-- ✅ FIX: Ye 3 button ab hamesha dikhenge, Screenshot jaisa -->
+  <!-- Agar Dashboard se link aayega to uska URL inhi me lag jayega -->
+  <div id="linksList">
+    <a id="btnInsta" class="btn" href="#" target="_blank">
+      <span class="icon-box insta-bg"><i class="fa-brands fa-instagram"></i></span><div>Instagram <small>Follow karo</small></div><span class="arrow">↗</span>
+    </a>
+    <a id="btnYt" class="btn" href="#" target="_blank">
+      <span class="icon-box yt-bg"><i class="fa-brands fa-youtube"></i></span><div>YouTube <small>Subscribe karo</small></div><span class="arrow">↗</span>
+    </a>
+    <a id="btnWa" class="btn" href="https://wa.me/919343262030" target="_blank">
+      <span class="icon-box wa-bg"><i class="fa-brands fa-whatsapp"></i></span><div>WhatsApp <small>Chat karo</small></div><span class="arrow">↗</span>
+    </a>
+  </div>
+
   <h3 style="margin:25px 0 10px;">My Products 🛍️</h3>
-  <div id="productsList"></div>
+  <!-- ✅ FIX: Products bhi ab Screenshot jaisa hamesha dikhenge -->
+  <div id="productsList">
+    <a id="prod1" class="btn" href="#" target="_blank"><span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span><div>Product 1 <small>Buy Now</small></div><span class="arrow">↗</span></a>
+    <a id="prod2" class="btn" href="#" target="_blank"><span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span><div>Product 2 <small>Buy Now</small></div><span class="arrow">↗</span></a>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script>
-  // ✅ FIREBASE CONFIG - Tera wahi linkspace-e77d2
   const firebaseConfig = {
     apiKey: "AIzaSyD3hKXZ87S5SgSfFqUNG7uKChuX-iVSwSo",
     authDomain: "linkspace-e77d2.firebaseapp.com",
@@ -73,9 +88,8 @@
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
+  const rtdb = firebase.database();
 
-  // ✅ FIX 1: USERNAME NIKALNA - /rr44 aur /?u=rr44 dono chalega
-  // Agar URL me kuch nahi hai to default rr44 lega
   let username = "";
   const params = new URLSearchParams(window.location.search);
   username = params.get("u") || params.get("username") || "";
@@ -86,9 +100,7 @@
   }
   if (!username) username = "rr44";
   username = username.trim().toLowerCase();
-  console.log("Username mila:", username);
 
-  // ✅ FIX 2: TYPING EFFECT - Bio aane pe bio se chalega
   let words = ["Surajpur | Creator", "YouTuber", "Instagram Star"];
   let wi = 0, li = 0;
   let el = document.getElementById("typing");
@@ -98,7 +110,7 @@
   }
   type2();
 
-  // ✅ FIX 3: PROFILE - Firestore users/rr44 se Naam, Bio, Photo aayega
+  // ✅ PROFILE - Firestore se
   db.collection("users").doc(username).get().then(doc => {
     if (!doc.exists) { document.getElementById("fullName").innerText = "User Not Found"; return; }
     const data = doc.data();
@@ -106,89 +118,74 @@
     if (data.bio) { document.getElementById("bio").innerText = data.bio; words = [data.bio, "Surajpur | Creator", "YouTuber"]; }
     if (data.photoUrl) document.getElementById("photo").src = data.photoUrl;
     document.title = (data.name || username) + " | LinkSpace";
-    // ✅ FIX: Agar profile me social links hai to upar ke icons me laga do
-    if (data.instagram) document.getElementById("topInsta").href = data.instagram;
-    if (data.youtube) document.getElementById("topYt").href = data.youtube;
-    if (data.whatsapp) document.getElementById("topWa").href = data.whatsapp;
+    if (data.instagram) { document.getElementById("topInsta").href = data.instagram; document.getElementById("btnInsta").href = data.instagram; }
+    if (data.youtube) { document.getElementById("topYt").href = data.youtube; document.getElementById("btnYt").href = data.youtube; }
+    if (data.whatsapp) { document.getElementById("btnWa").href = data.whatsapp; }
     if (data.email) document.getElementById("topMail").href = "mailto:" + data.email;
+    if (data.tiktok) document.getElementById("topTikTok").href = data.tiktok;
   });
 
-  // ✅ FIX 4: LINKS - Sabse bada fix
-  // Pehle orderBy("createdAt") tha, jisme createdAt nahi hota wo link aata hi nahi tha. Isliye orderBy hata diya.
-  // Ab url/link/href sab naam se link pakdega
+  // ✅ LINKS FIX: Ab Dashboard ka link aayega to Screenshot wale button ka URL badal dega
+  // Nahi aayega to bhi button gayab nahi hoga, wahi dikhega
+  function handleLink(l){
+    if (l.isActive === false) return;
+    const url = l.url || l.link || l.href || l.value || "#";
+    const title = (l.title || l.name || "").toLowerCase();
+    // ✅ Instagram wala link aaya to Instagram button + top icon dono me lagao
+    if (title.includes("insta")) { document.getElementById("btnInsta").href = url; document.getElementById("topInsta").href = url; }
+    // ✅ YouTube wala link aaya to YouTube button + top icon dono me lagao
+    else if (title.includes("youtube") || title.includes("yt") || title.includes("you")) { document.getElementById("btnYt").href = url; document.getElementById("topYt").href = url; }
+    // ✅ WhatsApp wala link aaya to WhatsApp button me lagao
+    else if (title.includes("whats") || title.includes("whatsapp")) { document.getElementById("btnWa").href = url; }
+    // ✅ TikTok wala link aaya to top TikTok icon me lagao
+    else if (title.includes("tiktok") || title.includes("tik")) { document.getElementById("topTikTok").href = url; }
+    // ✅ Mail wala link aaya to top Mail icon me lagao
+    else if (title.includes("mail") || title.includes("email")) { document.getElementById("topMail").href = url; }
+    // ✅ Agar koi naya link hai jaise Telegram, to uska alag button bana do
+    else {
+      const box = document.getElementById("linksList");
+      // Duplicate na bane isliye check karo
+      if (box.innerHTML.includes(url)) return;
+      box.innerHTML += `<a class="btn" href="${url}" target="_blank"><span class="icon-box prod-bg"><i class="fa-solid fa-link"></i></span><div>${l.title || "Link"} <small>Open karo</small></div><span class="arrow">↗</span></a>`;
+    }
+  }
+
+  // ✅ Firestore + RTDB dono se Links lo
   db.collection("users").doc(username).collection("links").get().then(snap => {
-    const box = document.getElementById("linksList");
-    box.innerHTML = "";
-    console.log("Links mile:", snap.size); // ✅ Debug: Console me kitne links mile
-    snap.forEach(d => {
-      const l = d.data();
-      console.log("Link data:", l); // ✅ Debug: Har link ka data dikhayega
-      // ✅ FIX: Agar toggle OFF hai to hi skip karo, warna dikhao
-      if (l.isActive === false) return;
-      // ✅ FIX: Dashboard me field ka naam kuch bhi ho - url/link/href/value - sab chalega
-      const linkUrl = l.url || l.link || l.href || l.value || "#";
-      const title = l.title || l.name || "Link";
-      let titleLower = title.toLowerCase();
-
-      // ✅ FIX: Upar wale gol icons ko bhi isi Links wale link se clickable banao
-      // Jaise Title me "whats" hai to WhatsApp icon usi link pe khulega
-      if (titleLower.includes("whats") || titleLower.includes("whatsapp")) document.getElementById("topWa").href = linkUrl;
-      if (titleLower.includes("insta")) document.getElementById("topInsta").href = linkUrl;
-      if (titleLower.includes("youtube") || titleLower.includes("yt")) document.getElementById("topYt").href = linkUrl;
-      if (titleLower.includes("mail") || titleLower.includes("email")) document.getElementById("topMail").href = linkUrl;
-
-      // ✅ FIX: Title ke hisab se sahi icon + color lagao
-      let iconClass = "fa-solid fa-link"; let bgClass = "prod-bg";
-      if (titleLower.includes("insta")) { iconClass = "fa-brands fa-instagram"; bgClass = "insta-bg"; }
-      else if (titleLower.includes("youtube") || titleLower.includes("yt")) { iconClass = "fa-brands fa-youtube"; bgClass = "yt-bg"; }
-      else if (titleLower.includes("whats") || titleLower.includes("whatsapp")) { iconClass = "fa-brands fa-whatsapp"; bgClass = "wa-bg"; }
-
-      // ✅ FIX: Button clickable banaya - href me linkUrl daala
-      box.innerHTML += `<a class="btn" href="${linkUrl}" target="_blank">
-        <span class="icon-box ${bgClass}"><i class="${iconClass}"></i></span><div>${title} <small>Open karo</small></div><span class="arrow">↗</span></a>`;
-    });
-    if (snap.empty) box.innerHTML = "<p style='color:#ddd;font-size:13px'>No links yet</p>";
-  }).catch(e => {
-    console.log("Links Error:", e);
-    document.getElementById("linksList").innerHTML = "<p>Error: " + e.message + "</p>";
+    snap.forEach(d => handleLink(d.data()));
+    rtdb.ref("users/" + username + "/links").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(handleLink); });
+  }).catch(() => {
+    rtdb.ref("users/" + username + "/links").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(handleLink); });
   });
 
-  // ✅ FIX 5: PRODUCTS - Ye tha tera main issue
-  // Pehle sirf p.title aur p.url check ho raha tha.
-  // Dashboard me kabhi p.name, p.link, p.buyLink hota hai, isliye product nahi aa raha tha.
-  // Ab saare naam check karega, to product pakka aayega
+  // ✅ PRODUCTS FIX: Dashboard se product aayega to Product 1 / Product 2 ki jagah lega
+  // Nahi aayega to bhi Screenshot jaisa Product 1 / Product 2 dikhega
+  function handleProduct(p, index){
+    if (p.isActive === false) return;
+    const title = p.title || p.name || p.productName || ("Product " + (index+1));
+    const desc = p.desc || p.description || p.bio || "Buy Now";
+    const price = p.price || p.amount || "";
+    const url = p.url || p.link || p.href || p.buyLink || "#";
+    // Pehle 2 products ko replace karo, 3rd se naya button banao
+    if (index === 0) {
+      document.getElementById("prod1").href = url;
+      document.getElementById("prod1").querySelector("div").innerHTML = `${title} <small>${desc} ${price ? ' - ₹'+price : ''}</small>`;
+    } else if (index === 1) {
+      document.getElementById("prod2").href = url;
+      document.getElementById("prod2").querySelector("div").innerHTML = `${title} <small>${desc} ${price ? ' - ₹'+price : ''}</small>`;
+    } else {
+      document.getElementById("productsList").innerHTML += `<a class="btn" href="${url}" target="_blank"><span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span><div>${title} <small>${desc} ${price ? ' - ₹'+price : ''}</small></div><span class="arrow">↗</span></a>`;
+    }
+  }
+
+  let prodIndex = 0;
   db.collection("users").doc(username).collection("products").get().then(snap => {
-    const box = document.getElementById("productsList");
-    box.innerHTML = "";
-    console.log("Products mile:", snap.size); // ✅ Debug: Console me kitne products mile
-    snap.forEach(d => {
-      const p = d.data();
-      console.log("Product data:", p); // ✅ Debug: Har product ka data dikhayega
-      // ✅ FIX: Toggle OFF ho to hi skip karo
-      if (p.isActive === false) return;
-
-      // ✅ FIX: Title ke saare naam - title/name/productName
-      const pTitle = p.title || p.name || p.productName || "Product";
-      // ✅ FIX: Desc ke saare naam - desc/description/bio
-      const pDesc = p.desc || p.description || p.bio || "";
-      // ✅ FIX: Price ke saare naam - price/amount
-      const pPrice = p.price || p.amount || "";
-      // ✅ FIX: Link ke saare naam - url/link/href/buyLink
-      const pUrl = p.url || p.link || p.href || p.buyLink || "#";
-      // ✅ FIX: Image ke saare naam - image/photoUrl/img (agar nahi hai to bag icon hi rahega)
-
-      box.innerHTML += `<a class="btn" href="${pUrl}" target="_blank">
-        <span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span>
-        <div>${pTitle} <small>${pDesc} ${pPrice ? ' - ₹'+pPrice : ''}</small></div>
-        <span class="arrow">↗</span></a>`;
-    });
-    if (snap.empty) box.innerHTML = "<p style='color:#ddd;font-size:13px'>No products yet</p>";
-  }).catch(e => {
-    console.log("Products Error:", e);
-    document.getElementById("productsList").innerHTML = "<p style='color:red;font-size:13px'>Error: " + e.message + "</p>";
+    snap.forEach(d => { handleProduct(d.data(), prodIndex); prodIndex++; });
+    rtdb.ref("users/" + username + "/products").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(p => { handleProduct(p, prodIndex); prodIndex++; }); });
+  }).catch(() => {
+    rtdb.ref("users/" + username + "/products").once("value").then(s => { const v = s.val(); if(v) Object.values(v).forEach(p => { handleProduct(p, prodIndex); prodIndex++; }); });
   });
 
-  // ✅ STARS ANIMATION - Tera wahi purana, isme kuch change nahi kiya
   let canvas = document.getElementById("stars");
   let ctx = canvas.getContext("2d");
   canvas.width = window.innerWidth; canvas.height = window.innerHeight;
