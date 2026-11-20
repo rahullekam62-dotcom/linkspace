@@ -30,43 +30,34 @@
   </style>
 </head>
 <body>
-
-<video class="bg-video" autoplay muted loop playsinline>
-  <source src="https://cdn.coverr.co/videos/coverr-purple-nebula-abstract-.../mp4" type="video/mp4">
-</video>
+<video class="bg-video" autoplay muted loop playsinline><source src="https://cdn.coverr.co/videos/coverr-purple-nebula-abstract-.../mp4" type="video/mp4"></video>
 <div class="bg-overlay"></div>
 <canvas id="stars"></canvas>
-
 <div class="card">
   <img id="photo" class="profile" src="photo.png">
   <br>
   <span class="online"><span class="dot">●</span> currently building • online</span>
   <h1 id="fullName">Loading...</h1>
-  <!-- ✅ USERNAME CHHUPA DIYA - dikhega nahi, par JS nahi atkega -->
   <div id="usernameDisplay" style="display:none"></div>
   <p><span id="typing"></span><span class="cursor">|</span></p>
   <div id="bio" style="display:none"></div>
 
+  <!-- ✅ AB YE SAB CLICKABLE HONGE -->
   <div class="icons">
     <a id="topYt" href="#" target="_blank"><i class="fa-brands fa-youtube"></i></a>
     <a id="topInsta" href="#" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-    <a id="topWa" href="#" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+    <a id="topWa" href="https://wa.me/919343262030" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
     <a id="topMail" href="#" target="_blank"><i class="fa-solid fa-envelope"></i></a>
   </div>
 
-  <!-- ✅ LINKS AB FIRESTORE SE AAYENGE -->
   <div id="linksList"></div>
-
   <h3 style="margin:25px 0 10px;">My Products 🛍️</h3>
   <div id="productsList"></div>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
 <script>
-  // ✅ UPAR WALE CODE KA FIREBASE CONFIG
   const firebaseConfig = {
     apiKey: "AIzaSyD3hKXZ87S5SgSfFqUNG7uKChuX-iVSwSo",
     authDomain: "linkspace-e77d2.firebaseapp.com",
@@ -80,95 +71,84 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // ✅ USERNAME NIKALNA - /rr44 aur /?u=rr44 dono chalega
   let username = "";
   const params = new URLSearchParams(window.location.search);
   username = params.get("u") || params.get("username") || "";
   if (!username) {
     const path = window.location.pathname.replace(/^\/+|\/+$/g, "");
     const parts = path.split("/").filter(Boolean);
-    if (parts.length > 0 && parts[0] !== "index.html" && !parts[0].includes(".html")) {
-      username = parts[0];
-    }
+    if (parts.length > 0 && parts[0] !== "index.html" && !parts[0].includes(".html")) username = parts[0];
   }
   if (!username) username = "rr44";
   username = username.trim().toLowerCase();
-  console.log("Username mila:", username);
 
-  // ✅ SAFE - div na bhi ho to error nahi
-  const usernameEl = document.getElementById("usernameDisplay");
-  if (usernameEl) usernameEl.innerText = "@" + username;
-
-  // ✅ TYPING EFFECT - pehle default, baad me bio se
   let words = ["Surajpur | Creator", "YouTuber", "Instagram Star"];
   let wi = 0, li = 0;
   let el = document.getElementById("typing");
   function type2(){
-    if(li <= words[wi].length){
-      el.innerHTML = words[wi].substring(0, li);
-      li++; setTimeout(type2, 100);
-    } else {
-      setTimeout(()=>{ li=0; wi=(wi+1)%words.length; type2(); }, 1500);
-    }
+    if(li <= words[wi].length){ el.innerHTML = words[wi].substring(0, li); li++; setTimeout(type2, 100); }
+    else { setTimeout(()=>{ li=0; wi=(wi+1)%words.length; type2(); }, 1500); }
   }
   type2();
 
-  // ✅ PROFILE FIRESTORE SE
   db.collection("users").doc(username).get().then(doc => {
-    if (!doc.exists) {
-      document.getElementById("fullName").innerText = "User Not Found";
-      return;
-    }
+    if (!doc.exists) { document.getElementById("fullName").innerText = "User Not Found"; return; }
     const data = doc.data();
     if (data.name) document.getElementById("fullName").innerText = data.name;
-    if (data.bio) {
-      document.getElementById("bio").innerText = data.bio;
-      words = [data.bio, "Surajpur | Creator", "YouTuber"];
-    }
+    if (data.bio) { document.getElementById("bio").innerText = data.bio; words = [data.bio, "Surajpur | Creator", "YouTuber"]; }
     if (data.photoUrl) document.getElementById("photo").src = data.photoUrl;
     document.title = (data.name || username) + " | LinkSpace";
-
-    // Agar Firestore me social links hai to top icons me laga do
     if (data.instagram) document.getElementById("topInsta").href = data.instagram;
     if (data.youtube) document.getElementById("topYt").href = data.youtube;
     if (data.whatsapp) document.getElementById("topWa").href = data.whatsapp;
     if (data.email) document.getElementById("topMail").href = "mailto:" + data.email;
-  }).catch(e => {
-    document.getElementById("fullName").innerText = "Error: " + e.message;
   });
 
-  // ✅ LINKS - users/rr44/links se - tere design wale button me
-  db.collection("users").doc(username).collection("links").orderBy("createdAt", "asc").get().then(snap => {
+  // ✅ LINKS - AB UPAR KE ICONS BHI ISI SE CLICKABLE HONGE
+  db.collection("users").doc(username).collection("links").get().then(snap => {
     const box = document.getElementById("linksList");
     box.innerHTML = "";
+    console.log("Links mile:", snap.size);
     snap.forEach(d => {
       const l = d.data();
+      console.log("Link:", l);
       if (l.isActive === false) return;
-      let iconClass = "fa-solid fa-link";
-      let bgClass = "prod-bg";
-      let titleLower = (l.title || "").toLowerCase();
-      if (titleLower.includes("insta")) { iconClass = "fa-brands fa-instagram"; bgClass = "insta-bg"; }
-      else if (titleLower.includes("youtube") || titleLower.includes("yt")) { iconClass = "fa-brands fa-youtube"; bgClass = "yt-bg"; }
-      else if (titleLower.includes("whatsapp") || titleLower.includes("wa")) { iconClass = "fa-brands fa-whatsapp"; bgClass = "wa-bg"; }
+      // url alag-alag naam se ho sakta hai - sab check karo
+      const linkUrl = l.url || l.link || l.href || l.value || "#";
+      const title = l.title || l.name || "Link";
+      let titleLower = title.toLowerCase();
 
-      box.innerHTML += `<a class="btn" href="${l.url}" target="_blank">
-        <span class="icon-box ${bgClass}"><i class="${iconClass}"></i></span><div>${l.title || 'Link'} <small>${l.subtitle || 'Open karo'}</small></div><span class="arrow">↗</span></a>`;
+      // ✅ Upar wale gol icons ko bhi isi link se jodo
+      if (titleLower.includes("whats") || titleLower.includes("wa")) document.getElementById("topWa").href = linkUrl;
+      if (titleLower.includes("insta")) document.getElementById("topInsta").href = linkUrl;
+      if (titleLower.includes("youtube") || titleLower.includes("yt") || titleLower.includes("you")) document.getElementById("topYt").href = linkUrl;
+      if (titleLower.includes("mail") || titleLower.includes("email")) document.getElementById("topMail").href = linkUrl;
+
+      let iconClass = "fa-solid fa-link"; let bgClass = "prod-bg";
+      if (titleLower.includes("insta")) { iconClass = "fa-brands fa-instagram"; bgClass = "insta-bg"; }
+      else if (titleLower.includes("youtube") || titleLower.includes("yt") || titleLower.includes("you")) { iconClass = "fa-brands fa-youtube"; bgClass = "yt-bg"; }
+      else if (titleLower.includes("whats") || titleLower.includes("wa")) { iconClass = "fa-brands fa-whatsapp"; bgClass = "wa-bg"; }
+
+      box.innerHTML += `<a class="btn" href="${linkUrl}" target="_blank">
+        <span class="icon-box ${bgClass}"><i class="${iconClass}"></i></span><div>${title} <small>Open karo</small></div><span class="arrow">↗</span></a>`;
     });
     if (snap.empty) box.innerHTML = "<p style='color:#ddd;font-size:13px'>No links yet</p>";
+  }).catch(e => {
+    console.log("Links Error:", e);
+    document.getElementById("linksList").innerHTML = "<p>Error: " + e.message + "</p>";
   });
 
-  // ✅ PRODUCTS - users/rr44/products se
   db.collection("users").doc(username).collection("products").get().then(snap => {
     const box = document.getElementById("productsList");
     box.innerHTML = "";
     snap.forEach(d => {
       const p = d.data();
-      box.innerHTML += `<a class="btn" href="${p.url || '#'}" target="_blank"><span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span><div>${p.title || p.name || 'Product'} <small>${p.desc || ''} ${p.price ? ' - ₹'+p.price : ''}</small></div><span class="arrow">↗</span></a>`;
+      const pUrl = p.url || p.link || "#";
+      box.innerHTML += `<a class="btn" href="${pUrl}" target="_blank"><span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span><div>${p.title || p.name || 'Product'} <small>${p.desc || ''} ${p.price ? ' - ₹'+p.price : ''}</small></div><span class="arrow">↗</span></a>`;
     });
     if (snap.empty) box.innerHTML = "<p style='color:#ddd;font-size:13px'>No products yet</p>";
   });
 
-  // Stars
   let canvas = document.getElementById("stars");
   let ctx = canvas.getContext("2d");
   canvas.width = window.innerWidth; canvas.height = window.innerHeight;
@@ -177,10 +157,7 @@
   function drawStars(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle="white";
-    stars.forEach(st=>{
-      ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI*2); ctx.fill();
-      st.y -= st.s; if(st.y<0) st.y=canvas.height;
-    });
+    stars.forEach(st=>{ ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI*2); ctx.fill(); st.y -= st.s; if(st.y<0) st.y=canvas.height; });
     requestAnimationFrame(drawStars);
   }
   drawStars();
