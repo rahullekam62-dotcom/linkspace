@@ -1,43 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LinkSpace Profile</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-  body { background: #f0f2f5; display: flex; justify-content: center; padding: 20px 12px; }
-  .container { width: 100%; max-width: 420px; background: #fff; border-radius: 24px; padding: 32px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-  .profile-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid #6C5CE7; margin: 0 auto; display: block; background:#eee; }
-  .full-name { font-size: 26px; font-weight: 800; margin-top: 14px; color: #111; }
-  .username { font-size: 14px; color: #6C5CE7; font-weight: 600; margin-top: 2px; }
-  .bio { font-size: 14px; color: #666; margin-top: 6px; line-height: 1.5; padding: 0 10px; }
-  .section-title { text-align: left; font-size: 14px; font-weight: 700; color: #888; margin: 24px 0 10px 4px; text-transform: uppercase; letter-spacing: 1px; }
-  .link-btn { display: flex; align-items: center; gap: 12px; background: #f8f7ff; border: 1px solid #eee; padding: 14px 16px; border-radius: 14px; text-decoration: none; color: #111; font-weight: 600; margin-bottom: 10px; }
-  .link-btn img { width: 28px; height: 28px; border-radius: 8px; }
-  .link-btn span { flex: 1; text-align: left; }
-  .product-card { display: flex; gap: 12px; background: #fff; border: 1px solid #eee; border-radius: 14px; padding: 10px; margin-bottom: 10px; text-align: left; text-decoration: none; color: #111; }
-  .product-card img { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; }
-  .product-card b { font-size: 15px; display: block; }
-  .product-card p { font-size: 13px; color: #666; }
-  .price { color: #6C5CE7; font-weight: 800; font-size: 14px; margin-top: 4px; }
-  .footer { margin-top: 20px; font-size: 12px; color: #aaa; }
+    *{margin:0; padding:0; box-sizing:border-box;}
+    body{ font-family: Arial; color:rgb(243, 245, 243); min-height:100vh; }
+    .bg-video{ position: fixed; top:0; left:0; width:100%; height:100%; z-index:-2; object-fit:cover; filter: brightness(0.5); }
+    .bg-overlay{ position: fixed; top:0; left:0; width:100%; height:100%; z-index:-1; background: radial-gradient(circle at 50% 0%, #4955f8 0%, #7676f4 50%, #733fed 100%); opacity: 0.85; }
+    #stars{ position:fixed; top:0; left:0; z-index:-1; }
+    .card{ width: 350px; margin: 20px auto; padding: 25px 18px; text-align:center; background: rgba(43, 208, 90, 0.1); border: 1px solid rgba(255,255,255,0.20); backdrop-filter: blur(18px); border-radius: 28px; box-shadow: 0 8px 32px rgba(0,0,0,0.35); }
+    img.profile{ width:120px; height:120px; border-radius:50%; border:3px solid #a855f7; object-fit:cover; }
+    .online{ display:inline-block; background:rgba(26, 25, 25, 0.35); padding:6px 14px; border-radius:20px; font-size:12px; margin:12px 0; border:1px solid rgba(51, 252, 37, 0.15); }
+    .dot{ color:#22c55e; }
+    h1{ font-size:32px; background: linear-gradient(90deg, #fff, #f4f3f5); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    p{ color:#f2faf3; margin:8px 0 15px; min-height:20px; }
+    .cursor{ color:white; animation: blink 0.7s infinite; }
+    @keyframes blink{ 50%{opacity:0;} }
+    .icons{ display:flex; justify-content:center; gap:12px; margin:15px 0 20px 0; }
+    .icons a{ width:45px; height:45px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.20); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:18px; text-decoration:none; }
+    .btn{ display:flex; align-items:center; gap:12px; color:white; padding:12px; margin:12px 0; border-radius:16px; text-decoration:none; font-weight:bold; text-align:left; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); }
+    .icon-box{ width:48px; height:48px; min-width:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; color:white; }
+    .insta-bg{ background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7); }
+    .yt-bg{ background:#FF0000; }
+    .wa-bg{ background:#25D366; }
+    .prod-bg{ background:#111; border:1px solid #333; }
+    .btn small{ display:block; font-weight:normal; color:#cbd5e1; font-size:12px; margin-top:3px; }
+    .arrow{ margin-left:auto; }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <img id="photo" class="profile-img" src="https://via.placeholder.com/110" alt="Profile">
-  <div id="fullName" class="full-name">Loading...</div>
-  <div id="bio" class="bio"></div>
- <div id="usernameDisplay" class="username"></div>
-  <div class="section-title">Links</div>
+<video class="bg-video" autoplay muted loop playsinline>
+  <source src="https://cdn.coverr.co/videos/coverr-purple-nebula-abstract-.../mp4" type="video/mp4">
+</video>
+<div class="bg-overlay"></div>
+<canvas id="stars"></canvas>
+
+<div class="card">
+  <img id="photo" class="profile" src="photo.png">
+  <br>
+  <span class="online"><span class="dot">●</span> currently building • online</span>
+  <h1 id="fullName">Loading...</h1>
+  <!-- ✅ USERNAME CHHUPA DIYA - dikhega nahi, par JS nahi atkega -->
+  <div id="usernameDisplay" style="display:none"></div>
+  <p><span id="typing"></span><span class="cursor">|</span></p>
+  <div id="bio" style="display:none"></div>
+
+  <div class="icons">
+    <a id="topYt" href="#" target="_blank"><i class="fa-brands fa-youtube"></i></a>
+    <a id="topInsta" href="#" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+    <a id="topWa" href="#" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+    <a id="topMail" href="#" target="_blank"><i class="fa-solid fa-envelope"></i></a>
+  </div>
+
+  <!-- ✅ LINKS AB FIRESTORE SE AAYENGE -->
   <div id="linksList"></div>
 
-  <div class="section-title">Products</div>
+  <h3 style="margin:25px 0 10px;">My Products 🛍️</h3>
   <div id="productsList"></div>
-
-  <div class="footer">Made with LinkSpace ❤️</div>
 </div>
 
 <!-- Firebase -->
@@ -45,6 +66,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
+  // ✅ UPAR WALE CODE KA FIREBASE CONFIG
   const firebaseConfig = {
     apiKey: "AIzaSyD3hKXZ87S5SgSfFqUNG7uKChuX-iVSwSo",
     authDomain: "linkspace-e77d2.firebaseapp.com",
@@ -55,80 +77,113 @@
     appId: "1:787498317437:web:6b01e5c38738dc4a282314",
     measurementId: "G-JQWGWZQQMQ"
   };
-
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // ✅ FIXED: USERNAME NIKALNA - /rr44 aur /?u=rr44 dono chalega
+  // ✅ USERNAME NIKALNA - /rr44 aur /?u=rr44 dono chalega
   let username = "";
-  // Pehle ?u= check karo
   const params = new URLSearchParams(window.location.search);
   username = params.get("u") || params.get("username") || "";
-
-  // Agar ?u me nahi hai to pathname se lo - /rr44
   if (!username) {
-    const path = window.location.pathname.replace(/^\/+|\/+$/g, ""); // aage-piche ke / hatao
+    const path = window.location.pathname.replace(/^\/+|\/+$/g, "");
     const parts = path.split("/").filter(Boolean);
-    // index.html ko username mat maano
     if (parts.length > 0 && parts[0] !== "index.html" && !parts[0].includes(".html")) {
       username = parts[0];
     }
   }
-
-  // Agar abhi bhi khali hai (sirf linkspace.co.in khola hai) to rr44 dikhao
   if (!username) username = "rr44";
   username = username.trim().toLowerCase();
-
   console.log("Username mila:", username);
-  document.getElementById("usernameDisplay").innerText = "@" + username;
 
-  // --- Profile ---
+  // ✅ SAFE - div na bhi ho to error nahi
+  const usernameEl = document.getElementById("usernameDisplay");
+  if (usernameEl) usernameEl.innerText = "@" + username;
+
+  // ✅ TYPING EFFECT - pehle default, baad me bio se
+  let words = ["Surajpur | Creator", "YouTuber", "Instagram Star"];
+  let wi = 0, li = 0;
+  let el = document.getElementById("typing");
+  function type2(){
+    if(li <= words[wi].length){
+      el.innerHTML = words[wi].substring(0, li);
+      li++; setTimeout(type2, 100);
+    } else {
+      setTimeout(()=>{ li=0; wi=(wi+1)%words.length; type2(); }, 1500);
+    }
+  }
+  type2();
+
+  // ✅ PROFILE FIRESTORE SE
   db.collection("users").doc(username).get().then(doc => {
     if (!doc.exists) {
       document.getElementById("fullName").innerText = "User Not Found";
-      document.getElementById("bio").innerText = "@" + username + " naam se Firestore me koi data nahi hai";
       return;
     }
     const data = doc.data();
-    console.log("Template Data:", data);
     if (data.name) document.getElementById("fullName").innerText = data.name;
-    if (data.bio) document.getElementById("bio").innerText = data.bio;
+    if (data.bio) {
+      document.getElementById("bio").innerText = data.bio;
+      words = [data.bio, "Surajpur | Creator", "YouTuber"];
+    }
     if (data.photoUrl) document.getElementById("photo").src = data.photoUrl;
     document.title = (data.name || username) + " | LinkSpace";
+
+    // Agar Firestore me social links hai to top icons me laga do
+    if (data.instagram) document.getElementById("topInsta").href = data.instagram;
+    if (data.youtube) document.getElementById("topYt").href = data.youtube;
+    if (data.whatsapp) document.getElementById("topWa").href = data.whatsapp;
+    if (data.email) document.getElementById("topMail").href = "mailto:" + data.email;
   }).catch(e => {
-    console.log("Firestore Error:", e);
     document.getElementById("fullName").innerText = "Error: " + e.message;
   });
 
-  // Links - users/rr44/links se
+  // ✅ LINKS - users/rr44/links se - tere design wale button me
   db.collection("users").doc(username).collection("links").orderBy("createdAt", "asc").get().then(snap => {
     const box = document.getElementById("linksList");
     box.innerHTML = "";
     snap.forEach(d => {
       const l = d.data();
       if (l.isActive === false) return;
-      box.innerHTML += `<a class="link-btn" href="${l.url}" target="_blank">
-        <img src="${l.icon || 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png'}">
-        <span>${l.title || 'Link'}</span><span>→</span></a>`;
+      let iconClass = "fa-solid fa-link";
+      let bgClass = "prod-bg";
+      let titleLower = (l.title || "").toLowerCase();
+      if (titleLower.includes("insta")) { iconClass = "fa-brands fa-instagram"; bgClass = "insta-bg"; }
+      else if (titleLower.includes("youtube") || titleLower.includes("yt")) { iconClass = "fa-brands fa-youtube"; bgClass = "yt-bg"; }
+      else if (titleLower.includes("whatsapp") || titleLower.includes("wa")) { iconClass = "fa-brands fa-whatsapp"; bgClass = "wa-bg"; }
+
+      box.innerHTML += `<a class="btn" href="${l.url}" target="_blank">
+        <span class="icon-box ${bgClass}"><i class="${iconClass}"></i></span><div>${l.title || 'Link'} <small>${l.subtitle || 'Open karo'}</small></div><span class="arrow">↗</span></a>`;
     });
-    if (snap.empty) box.innerHTML = "<p style='color:#aaa;font-size:13px'>No links yet</p>";
-  }).catch(e => {
-    document.getElementById("linksList").innerHTML = "<p style='color:#aaa;font-size:13px'>Links load nahi hue</p>";
+    if (snap.empty) box.innerHTML = "<p style='color:#ddd;font-size:13px'>No links yet</p>";
   });
 
-  // Products - users/rr44/products se
+  // ✅ PRODUCTS - users/rr44/products se
   db.collection("users").doc(username).collection("products").get().then(snap => {
     const box = document.getElementById("productsList");
     box.innerHTML = "";
     snap.forEach(d => {
       const p = d.data();
-      box.innerHTML += `<a class="product-card" href="${p.url || '#'}" target="_blank">
-        <img src="${p.image || p.photoUrl || 'https://via.placeholder.com/64'}">
-        <div><b>${p.title || p.name || 'Product'}</b><p>${p.desc || p.bio || ''}</p>
-        <div class="price">₹${p.price || ''}</div></div></a>`;
+      box.innerHTML += `<a class="btn" href="${p.url || '#'}" target="_blank"><span class="icon-box prod-bg"><i class="fa-solid fa-bag-shopping"></i></span><div>${p.title || p.name || 'Product'} <small>${p.desc || ''} ${p.price ? ' - ₹'+p.price : ''}</small></div><span class="arrow">↗</span></a>`;
     });
-    if (snap.empty) box.innerHTML = "<p style='color:#aaa;font-size:13px'>No products yet</p>";
+    if (snap.empty) box.innerHTML = "<p style='color:#ddd;font-size:13px'>No products yet</p>";
   });
+
+  // Stars
+  let canvas = document.getElementById("stars");
+  let ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  let stars = [];
+  for(let i=0;i<80;i++){ stars.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*1.5+0.5, s:Math.random()*0.5+0.2}); }
+  function drawStars(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="white";
+    stars.forEach(st=>{
+      ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI*2); ctx.fill();
+      st.y -= st.s; if(st.y<0) st.y=canvas.height;
+    });
+    requestAnimationFrame(drawStars);
+  }
+  drawStars();
 </script>
 </body>
 </html>
