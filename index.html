@@ -10,6 +10,7 @@
   .container { width: 100%; max-width: 420px; background: #fff; border-radius: 24px; padding: 32px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
   .profile-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid #6C5CE7; margin: 0 auto; display: block; background:#eee; }
   .full-name { font-size: 26px; font-weight: 800; margin-top: 14px; color: #111; }
+  .username { font-size: 14px; color: #6C5CE7; font-weight: 600; margin-top: 2px; }
   .bio { font-size: 14px; color: #666; margin-top: 6px; line-height: 1.5; padding: 0 10px; }
   .section-title { text-align: left; font-size: 14px; font-weight: 700; color: #888; margin: 24px 0 10px 4px; text-transform: uppercase; letter-spacing: 1px; }
   .link-btn { display: flex; align-items: center; gap: 12px; background: #f8f7ff; border: 1px solid #eee; padding: 14px 16px; border-radius: 14px; text-decoration: none; color: #111; font-weight: 600; margin-bottom: 10px; }
@@ -28,6 +29,7 @@
 <div class="container">
   <img id="photo" class="profile-img" src="https://via.placeholder.com/110" alt="Profile">
   <div id="fullName" class="full-name">Loading...</div>
+  <div id="usernameDisplay" class="username"></div>
   <div id="bio" class="bio"></div>
 
   <div class="section-title">Links</div>
@@ -44,49 +46,62 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
-  // 1. APNA FIREBASE CONFIG YAHAN DALO - Firebase Console > Project Settings > Your apps > Web
   const firebaseConfig = {
-  apiKey: "AIzaSyD3hKXZ87S5SgSfFqUNG7uKChuX-iVSwSo",
-  authDomain: "linkspace-e77d2.firebaseapp.com",
-  databaseURL: "https://linkspace-e77d2-default-rtdb.firebaseio.com",
-  projectId: "linkspace-e77d2",
-  storageBucket: "linkspace-e77d2.firebasestorage.app",
-  messagingSenderId: "787498317437",
-  appId: "1:787498317437:web:6b01e5c38738dc4a282314",
-  measurementId: "G-JQWGWZQQMQ"
-};
+    apiKey: "AIzaSyD3hKXZ87S5SgSfFqUNG7uKChuX-iVSwSo",
+    authDomain: "linkspace-e77d2.firebaseapp.com",
+    databaseURL: "https://linkspace-e77d2-default-rtdb.firebaseio.com",
+    projectId: "linkspace-e77d2",
+    storageBucket: "linkspace-e77d2.firebasestorage.app",
+    messagingSenderId: "787498317437",
+    appId: "1:787498317437:web:6b01e5c38738dc4a282314",
+    measurementId: "G-JQWGWZQQMQ"
+  };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // 2. Username URL se nikalenge - jaise linkspace.co.in/akhlesh ya ?u=akhlesh
+  // --- FIXED: USERNAME NIKALNA ---
   const params = new URLSearchParams(window.location.search);
-  let username = params.get("u") || params.get("username");
-  if (!username) {
-    // agar URL me /username hai to wahan se le lo
-    const parts = window.location.pathname.split("/").filter(Boolean);
-    username = parts[parts.length - 1];
-  }
-  username = (username || "").toLowerCase().trim();
+  let username = params.get("u") || params.get("username") || "";
 
-  // 3. Firestore se data lao - TERE HI NAAM SE: name, bio, photoUrl
+  // Agar URL me username nahi hai, to pathname check karo
+  // Lekin index.html / blank ko username mat maano
+  if (!username) {
+    const parts = window.location.pathname.split("/").filter(Boolean);
+    const last = parts[parts.length - 1] || "";
+    if (last && last !== "index.html" && !last.includes(".html") && last !== "index") {
+      username = last;
+    }
+  }
+
+  // Abhi tera username rr44 hai, to default wahi rakha hai
+  if (!username) username = "rr44";
+  username = username.trim();
+
+  document.getElementById("usernameDisplay").innerText = "@" + username;
+
+  // --- FIXED: Firestore se data - tere EditProfileBottomSheet wale naam se ---
+  // Collection: users, Document: rr44, Fields: name, bio, photoUrl
   db.collection("users").doc(username).get().then(doc => {
     if (!doc.exists) {
       document.getElementById("fullName").innerText = "User Not Found";
+      document.getElementById("bio").innerText = "@" + username + " naam se Firestore me koi data nahi hai";
       return;
     }
     const data = doc.data();
     console.log("Template Data:", data);
 
-    // YAHI FIX HAI - name, bio, photoUrl
     if (data.name) document.getElementById("fullName").innerText = data.name;
     if (data.bio) document.getElementById("bio").innerText = data.bio;
     if (data.photoUrl) document.getElementById("photo").src = data.photoUrl;
 
     document.title = (data.name || username) + " | LinkSpace";
+  }).catch(e => {
+    console.log("Firestore Error:", e);
+    document.getElementById("fullName").innerText = "Error: " + e.message;
   });
 
-  // 4. Links - users/username/links se
+  // Links - users/rr44/links se
   db.collection("users").doc(username).collection("links").get().then(snap => {
     const box = document.getElementById("linksList");
     box.innerHTML = "";
@@ -99,7 +114,7 @@
     if (snap.empty) box.innerHTML = "<p style='color:#aaa;font-size:13px'>No links yet</p>";
   });
 
-  // 5. Products - users/username/products se
+  // Products - users/rr44/products se
   db.collection("users").doc(username).collection("products").get().then(snap => {
     const box = document.getElementById("productsList");
     box.innerHTML = "";
