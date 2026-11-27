@@ -162,12 +162,7 @@ let linksCount = 0;
 
       // ✅ PLAN CHECK - Yaha daal de
       if (data.plan) userPlan = data.plan.toLowerCase();
-      console.log("User Plan:", userPlan);
-
-      // PRO / PREMIUM Badge
-      if (userPlan === "pro" || userPlan === "premium") {
-        document.getElementById("fullName").innerHTML += userPlan === "premium" ? " 👑" : " ✨";
-      }
+      console.log("User Plan:", userPlan)
 
       // STARTER hai to Video Band kar do
       if (userPlan === "starter") {
@@ -177,6 +172,10 @@ let linksCount = 0;
 
       console.log("Profile Data:", data);
       if (data.name) document.getElementById("fullName").innerText = data.name;
+       // PRO / PREMIUM Badge
+      if (userPlan === "pro" || userPlan === "premium") {
+        document.getElementById("fullName").innerHTML += userPlan === "premium" ? " 👑" : " ✨";
+      }
       if (data.bio) { document.getElementById("bio").innerText = data.bio; words = [data.bio, "Surajpur | Creator", "YouTuber"]; }
       if (data.photoUrl || data.photo) document.getElementById("photo").src = data.photoUrl || data.photo;
       document.title = (data.name || username) + " | LinkSpace";
