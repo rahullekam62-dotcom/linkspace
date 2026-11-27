@@ -7,13 +7,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
     *{margin:0; padding:0; box-sizing:border-box;}
-
     body{ font-family: Arial; color:rgb(243, 245, 243); min-height:100vh; padding: 15px;}
     .bg-video{ position: fixed; top:0; left:0; width:100%; height:100%; z-index:-2; object-fit:cover; filter: brightness(0.5); }
     .bg-overlay{ position: fixed; top:0; left:0; width:100%; height:100%; z-index:-1; background: radial-gradient(circle at 50% 0%, #4955f8 0%, #7676f4 50%, #733fed 100%); opacity: 0.85; }
     #stars{ position:fixed; top:0; left:0; z-index:-1; }
-
-    /* ✅ FIX: Phone me pura cover karega + 15px padding ke saath */
     .card{ width: 100%; max-width: 420px; margin: 0 auto; min-height: calc(100vh - 30px); padding: 25px 18px; text-align:center; background: rgba(43, 208, 90, 0.1); border: 1px solid rgba(255,255,255,0.20); backdrop-filter: blur(18px); border-radius: 28px; box-shadow: 0 8px 32px rgba(0,0,0,0.35); }
     img.profile{ width:120px; height:120px; border-radius:50%; border:3px solid #a855f7; object-fit:cover; }
     .online{ display:inline-block; background:rgba(26, 25, 25, 0.35); padding:6px 14px; border-radius:20px; font-size:12px; margin:12px 0; border:1px solid rgba(51, 252, 37, 0.15); }
@@ -33,22 +30,38 @@
     .prod-bg{ background:#111; border:1px solid #333; }
     .btn small{ display:block; font-weight:normal; color:#cbd5e1; font-size:12px; margin-top:3px; }
     .arrow{ margin-left:auto; }
+
+    /* ============================================================
+       ✅ NAYA CSS - BRANDING FOOTER
+       Ye neeche wala "Made with LinkSpace" wala box hai
+       Free / Starter ko dikhega, PRO / PREMIUM ko nahi dikhega
+       ============================================================ */
+    .branding{ margin-top:25px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.15); font-size:13px; color:#e2e8f0; }
+    .branding a{ color:white; font-weight:bold; text-decoration:none; background:rgba(255,255,255,0.15); padding:6px 14px; border-radius:20px; display:inline-block; margin-top:8px; }
   </style>
 </head>
 <body>
-<video class="bg-video" autoplay muted loop playsinline><source src="https://cdn.coverr.co/videos/coverr-purple-nebula-abstract-.../mp4" type="video/mp4"></video>
+
+<!-- ============================================================
+     ✅ BACKGROUND VIDEO
+     Sirf PRO (₹3) aur PREMIUM (₹4) walo ko chalega
+     Free / Starter walo ke liye JS se band kar denge
+     ============================================================ -->
+<video id="bgVideo" class="bg-video" autoplay muted loop playsinline><source src="https://cdn.coverr.co/videos/coverr-purple-nebula-abstract-.../mp4" type="video/mp4"></video>
 <div class="bg-overlay"></div>
 <canvas id="stars"></canvas>
+
 <div class="card">
   <img id="photo" class="profile" src="photo.png">
   <br>
   <span class="online"><span class="dot">●</span> currently building • online</span>
+
+  <!-- ✅ Yaha naam ke aage Badge lagega - PRO = ✨, PREMIUM = 👑 -->
   <h1 id="fullName">Loading...</h1>
   <div id="usernameDisplay" style="display:none"></div>
   <p><span id="typing"></span><span class="cursor">|</span></p>
   <div id="bio" style="display:none"></div>
 
-  <!-- ✅ PICS WAPAS - Upar wale gol icons -->
   <div id="topIconsBox" class="icons" style="display:none;">
     <a id="topYt" href="#" target="_blank" style="display:none;"><i class="fa-brands fa-youtube"></i></a>
     <a id="topInsta" href="#" target="_blank" style="display:none;"><i class="fa-brands fa-instagram"></i></a>
@@ -60,6 +73,17 @@
   <div id="linksList"></div>
   <h3 id="prodHeading" style="margin:25px 0 10px; display:none;">My Products 🛍️</h3>
   <div id="productsList"></div>
+
+  <!-- ============================================================
+       ✅ BRANDING FOOTER - "Made with LinkSpace"
+       Ye tera logo / photo NAHI hai, ye sirf neeche wala prachar hai
+       Free / Starter = DIKHEGA (free marketing hogi)
+       PRO / PREMIUM = NAHI DIKHEGA (paisa diya hai isliye)
+       ============================================================ -->
+  <div id="brandingFooter" class="branding">
+    Made with ❤️ LinkSpace<br>
+    <a href="https://linkspace.co.in" target="_blank">✨ Create your own FREE</a>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -81,8 +105,15 @@
   const rtdb = firebase.database();
 
   let username = "";
-  let userPlan = "starter"; // default Starter
-let linksCount = 0;
+
+  // ============================================================
+  // ✅ PLAN VARIABLE
+  // Default "free" rakha hai, taaki agar Firestore me plan na mile
+  // to user ko Free hi samjhe, Starter nahi.
+  // PlansActivity se ye values aati hai: starter / pro / premium
+  // ============================================================
+  let userPlan = "free";
+  let linksCount = 0;
 
   const params = new URLSearchParams(window.location.search);
   username = params.get("u") || params.get("username") || "";
@@ -110,6 +141,33 @@ let linksCount = 0;
     a.href = url;
   }
 
+  // ============================================================
+  // ✅ applyPlan() - SABSE MAIN FUNCTION
+  // Ye Firestore se plan milne ke baad chalta hai
+  // Kaam:
+  //  1. PRO / PREMIUM  -> Video ON, Branding OFF, Naam pe Badge ON
+  //  2. FREE / STARTER -> Video OFF, Branding ON, Badge OFF
+  // ============================================================
+  function applyPlan(){
+    const video = document.getElementById("bgVideo");
+    const branding = document.getElementById("brandingFooter");
+    const nameEl = document.getElementById("fullName");
+
+    if (userPlan === "pro" || userPlan === "premium") {
+      // ---- PAID USER ----
+      if(video) video.style.display = "block"; // Video chalu
+      if(branding) branding.style.display = "none"; // Neeche wala "Made with LinkSpace" hata do
+      // Naam ke aage badge lagao - pehle check karo taaki double na lage
+      if(nameEl && !nameEl.innerHTML.includes("✨") && !nameEl.innerHTML.includes("👑")){
+        nameEl.innerHTML += userPlan === "premium" ? " 👑" : " ✨"; // Premium = Crown, Pro = Star
+      }
+    } else {
+      // ---- FREE / STARTER USER ----
+      if(video) video.style.display = "none"; // Video band, sirf gradient background rahega
+      if(branding) branding.style.display = "block"; // "Made with LinkSpace" dikhao - free marketing
+    }
+  }
+
   function showOneLink(l){
     if (!l) return;
     if (l.isActive === false || l.active === false || l.visible === false) return;
@@ -130,11 +188,9 @@ let linksCount = 0;
       <span class="icon-box ${bgClass}"><i class="${iconClass}"></i></span><div>${title} <small>${subtitle}</small></div><span class="arrow">↗</span></a>`;
   }
 
-  // ✅ PRODUCT - Image ke saath
   function showOneProduct(p){
     if (!p || typeof p !== "object") return;
     if (p.isActive === false || p.active === false || p.visible === false) return;
-    console.log("Product mila:", p);
     const title = p.title || p.name || p.productName || p.productTitle || p.itemName || p.label || "Product";
     const desc = p.desc || p.description || p.productDesc || p.productDescription || p.bio || p.details || "Buy Now";
     const price = p.price || p.productPrice || p.amount || p.cost || p.mrp || "";
@@ -156,26 +212,20 @@ let linksCount = 0;
 
   function loadAll(){
     db.collection("users").doc(username).get().then(doc => {
-      if (!doc.exists) return;
+      if (!doc.exists) { applyPlan(); return; } // User nahi mila to Free samajh ke plan lagao
       const data = doc.data();
       console.log("Profile Data:", data);
 
-      // ✅ PLAN CHECK - Yaha daal de
+      // ============================================================
+      // ✅ PLAN CHECK - Firestore se "plan" field padh rahe hai
+      // Ye wahi field hai jo PlansActivity me save hota hai
+      // "STARTER" / "PRO" aaye to lowercase karke "starter" / "pro" bana diya
+      // ============================================================
       if (data.plan) userPlan = data.plan.toLowerCase();
-      console.log("User Plan:", userPlan)
+      console.log("User Plan:", userPlan);
+      applyPlan(); // Plan milte hi Video / Branding / Badge set karo
 
-      // STARTER hai to Video Band kar do
-      if (userPlan === "starter") {
-        document.querySelector(".bg-video").style.display = "none";
-      }
-
-
-      console.log("Profile Data:", data);
       if (data.name) document.getElementById("fullName").innerText = data.name;
-       // PRO / PREMIUM Badge
-      if (userPlan === "pro" || userPlan === "premium") {
-        document.getElementById("fullName").innerHTML += userPlan === "premium" ? " 👑" : " ✨";
-      }
       if (data.bio) { document.getElementById("bio").innerText = data.bio; words = [data.bio, "Surajpur | Creator", "YouTuber"]; }
       if (data.photoUrl || data.photo) document.getElementById("photo").src = data.photoUrl || data.photo;
       document.title = (data.name || username) + " | LinkSpace";
@@ -190,17 +240,19 @@ let linksCount = 0;
       if (Array.isArray(data.myProducts)) data.myProducts.forEach(showOneProduct);
       if (data.product && typeof data.product === "object") showOneProduct(data.product);
       if (data.products && !Array.isArray(data.products) && typeof data.products === "object") Object.values(data.products).forEach(showOneProduct);
+
+      // ✅ Naam set hone ke baad fir se applyPlan, taaki badge naam ke saath lage
+      applyPlan();
     });
 
     ["links","products","shop","store","items"].forEach(col => {
       db.collection("users").doc(username).collection(col).get().then(snap => {
-        console.log("Firestore", col, snap.size);
         snap.forEach(d => { if(col === "links") showOneLink(d.data()); else showOneProduct(d.data()); });
       }).catch(()=>{});
     });
 
     rtdb.ref("users/" + username).once("value").then(s => {
-      const data = s.val(); console.log("RTDB Data:", data); if(!data) return;
+      const data = s.val(); if(!data) return;
       if (data.email) showOneLink({title:"Email", url:"mailto:" + data.email, subtitle:"Mail karo"});
       if (Array.isArray(data.links)) data.links.forEach(showOneLink);
       else if (data.links && typeof data.links === "object") Object.values(data.links).forEach(showOneLink);
@@ -218,6 +270,7 @@ let linksCount = 0;
   }
   loadAll();
 
+  // Stars animation - isme kuch change nahi kiya
   let canvas = document.getElementById("stars");
   let ctx = canvas.getContext("2d");
   canvas.width = window.innerWidth; canvas.height = window.innerHeight;
