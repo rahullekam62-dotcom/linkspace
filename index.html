@@ -81,6 +81,9 @@
   const rtdb = firebase.database();
 
   let username = "";
+  let userPlan = "starter"; // default Starter
+let linksCount = 0;
+
   const params = new URLSearchParams(window.location.search);
   username = params.get("u") || params.get("username") || "";
   if (!username) {
@@ -155,6 +158,25 @@
     db.collection("users").doc(username).get().then(doc => {
       if (!doc.exists) return;
       const data = doc.data();
+
+            const data = doc.data();
+      console.log("Profile Data:", data);
+
+      // ✅ PLAN CHECK - Yaha daal de
+      if (data.plan) userPlan = data.plan.toLowerCase();
+      console.log("User Plan:", userPlan);
+
+      // PRO / PREMIUM Badge
+      if (userPlan === "pro" || userPlan === "premium") {
+        document.getElementById("fullName").innerHTML += userPlan === "premium" ? " 👑" : " ✨";
+      }
+
+      // STARTER hai to Video Band kar do
+      if (userPlan === "starter") {
+        document.querySelector(".bg-video").style.display = "none";
+      }
+
+
       console.log("Profile Data:", data);
       if (data.name) document.getElementById("fullName").innerText = data.name;
       if (data.bio) { document.getElementById("bio").innerText = data.bio; words = [data.bio, "Surajpur | Creator", "YouTuber"]; }
